@@ -93,11 +93,11 @@ class BookingTests(unittest.TestCase):
         self.post()
         self.post(room='Room 2', md_name='Budi', supplier_name='Tamu Lain')
         result = self.client.get('/?scope=all&q=Dimas')
-        self.assertIn('Dimas', result.text)
+        self.assertIn('PT Mitra', result.text)
         self.assertNotIn('Tamu Lain', result.text)
         result = self.client.get('/?date=2020-01-01&view=list')
         self.assertIn('Belum ada booking', result.text)
-        self.assertNotIn('Dimas', result.text)
+        self.assertNotIn('PT Mitra', result.text)
 
 
 if __name__ == '__main__':
