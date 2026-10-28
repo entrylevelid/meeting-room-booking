@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#fff8e7">
-    <title>{% block title %}Jadwal{% endblock %} · Ruang Meeting</title>
+    <title>{% block title %}Jadwal{% endblock %} · entrylevel.id</title>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
@@ -13,7 +13,7 @@
 <body>
 <a class="skip-link" href="#main">Langsung ke konten</a>
 <header class="topbar">
-    <a href="{{ url_for('index') }}" class="brand"><span class="brand-mark">{{ icon('door', 22) }}</span><span class="brand-text">Ruang Meeting</span></a>
+    <a href="{{ url_for('index') }}" class="brand"><span class="brand-mark">{{ icon('door', 22) }}</span><span class="brand-text">entrylevel.id</span></a>
     <nav class="nav" aria-label="Menu utama">
         <a href="{{ url_for('index') }}" class="nav-link {{ 'active' if scope|default('day') != 'all' else '' }}">{{ icon('calendar', 18) }}Jadwal</a>
         <a href="{{ url_for('index', scope='all', view='list') }}" class="nav-link {{ 'active' if scope|default('day') == 'all' else '' }}">{{ icon('list', 18) }}Semua booking</a>
