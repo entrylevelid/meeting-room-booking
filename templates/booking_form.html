@@ -10,7 +10,7 @@
     {% if errors %}<div class="form-errors" role="alert"><strong>Booking belum tersimpan</strong><ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
     <fieldset class="room-picker">
         <legend>Ruangan</legend>
-        {% for room in rooms %}<label class="room-option {{ 'room-1' if room == 'Room 1' else 'room-2' }}"><input type="radio" name="room" value="{{ room }}" required {{ 'checked' if values.room == room else '' }}><span class="room-option-body"><span class="room-option-mark">{{ icon('door', 26) }}</span><strong>{{ room }}</strong><span class="room-option-check">{{ icon('check', 18) }} Dipilih</span></span></label>{% endfor %}
+        {% for room in rooms %}<label class="room-option {{ room_tone(room) }}"><input type="radio" name="room" value="{{ room }}" required {{ 'checked' if values.room == room else '' }}><span class="room-option-body"><span class="room-option-mark">{{ icon('door', 26) }}</span><strong>{{ room }}</strong><span class="room-option-check">{{ icon('check', 18) }} Dipilih</span></span></label>{% endfor %}
     </fieldset>
     <div class="form-fields">
         <div class="field">
@@ -19,8 +19,8 @@
             <span class="field-hint" id="date-day"></span>
         </div>
         <div class="field-row">
-            <div class="field"><label for="start_time">Mulai <span>WIB</span></label><input type="time" id="start_time" name="start_time" value="{{ values.start_time }}" required></div>
-            <div class="field"><label for="end_time">Selesai <span>WIB</span></label><input type="time" id="end_time" name="end_time" value="{{ values.end_time }}" required></div>
+            <div class="field"><label for="start_time">Mulai <span>{{ timezone_label }}</span></label><input type="time" id="start_time" name="start_time" value="{{ values.start_time }}" required></div>
+            <div class="field"><label for="end_time">Selesai <span>{{ timezone_label }}</span></label><input type="time" id="end_time" name="end_time" value="{{ values.end_time }}" required></div>
         </div>
         <div class="duration-hint" id="duration-hint" aria-live="polite" hidden>{{ icon('clock', 16) }}<span></span></div>
         <div class="field">

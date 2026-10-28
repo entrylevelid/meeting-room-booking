@@ -30,9 +30,9 @@
         document.querySelectorAll('button[type="submit"]:disabled').forEach(button => { button.disabled = false; });
     });
 
-    const jakartaDate = () => new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
     const refreshPanel = document.querySelector('[data-auto-refresh]');
     if (refreshPanel) {
+        const localDate = () => new Intl.DateTimeFormat('en-CA', {timeZone: refreshPanel.dataset.timezone, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
         // Reception keeps this page open all day; reload so statuses and other desks' bookings stay current.
         const refreshAfter = 3 * 60 * 1000;
         let lastActivity = Date.now();
@@ -45,7 +45,7 @@
             if (document.querySelector('dialog[open]')) return;
             if (search && (document.activeElement === search || search.value !== search.defaultValue)) return;
             const {selectedDate, today} = refreshPanel.dataset;
-            if (selectedDate === today && jakartaDate() !== today) {
+            if (selectedDate === today && localDate() !== today) {
                 const url = new URL(window.location.href);
                 url.searchParams.delete('date');
                 window.location.assign(url);
@@ -74,7 +74,7 @@
                 setText('detail-supplier', booking.supplier);
                 document.getElementById('detail-edit').href = booking.edit_url;
                 document.getElementById('detail-delete-form').action = booking.delete_url;
-                dialog.dataset.room = booking.room === 'Room 2' ? '2' : '1';
+                dialog.className = `dialog ${booking.tone}`;
                 dialog.showModal();
             });
         });

@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 {% from 'macros.html' import icon, status_pill %}
-{% macro room_tone(room) %}{{ 'room-1' if room == 'Room 1' else 'room-2' }}{% endmacro %}
 {% block title %}{{ 'Semua booking' if scope == 'all' else 'Jadwal' }}{% endblock %}
 {% block content %}
 {% set is_today = selected_date == now.date() %}
-<div data-auto-refresh data-selected-date="{{ selected_date }}" data-today="{{ now.date() }}">
+<div data-auto-refresh data-selected-date="{{ selected_date }}" data-today="{{ now.date() }}" data-timezone="{{ timezone }}">
 {% if scope == 'day' %}
 <section class="daybar">
     <a class="btn btn-icon btn-lg" href="{{ previous_url }}" aria-label="Hari sebelumnya">{{ icon('left', 22) }}</a>
@@ -20,7 +19,7 @@
     </div>
 </section>
 <div class="toolbar">
-    <div class="seg" aria-label="Filter ruangan">{% for value, label in [('', 'Semua ruangan'), ('Room 1', 'Room 1'), ('Room 2', 'Room 2')] %}<a class="{{ 'selected' if selected_room == value else '' }}" href="{{ url_for('index', date=selected_date.isoformat(), room=value, view=view) }}">{% if value %}<span class="swatch {{ room_tone(value) }}"></span>{% endif %}{{ label }}</a>{% endfor %}</div>
+    <div class="seg" aria-label="Filter ruangan">{% for value in [''] + rooms|list %}<a class="{{ 'selected' if selected_room == value else '' }}" href="{{ url_for('index', date=selected_date.isoformat(), room=value, view=view) }}">{% if value %}<span class="swatch {{ room_tone(value) }}"></span>{% endif %}{{ value or 'Semua ruangan' }}</a>{% endfor %}</div>
     <div class="seg" aria-label="Tampilan">{% for value, label, name in [('schedule', 'Papan', 'grid'), ('list', 'Tabel', 'list')] %}<a class="{{ 'selected' if view == value else '' }}" href="{{ url_for('index', date=selected_date.isoformat(), room=selected_room, view=value) }}">{{ icon(name, 16) }}{{ label }}</a>{% endfor %}</div>
 </div>
 {% else %}
@@ -29,13 +28,13 @@
     <a class="btn btn-primary" href="{{ url_for('add_booking') }}">{{ icon('plus', 20) }} Booking</a>
 </section>
 <div class="toolbar">
-    <div class="seg" aria-label="Filter ruangan">{% for value, label in [('', 'Semua ruangan'), ('Room 1', 'Room 1'), ('Room 2', 'Room 2')] %}<a class="{{ 'selected' if selected_room == value else '' }}" href="{{ url_for('index', scope='all', view='list', room=value, q=search) }}">{% if value %}<span class="swatch {{ room_tone(value) }}"></span>{% endif %}{{ label }}</a>{% endfor %}</div>
+    <div class="seg" aria-label="Filter ruangan">{% for value in [''] + rooms|list %}<a class="{{ 'selected' if selected_room == value else '' }}" href="{{ url_for('index', scope='all', view='list', room=value, q=search) }}">{% if value %}<span class="swatch {{ room_tone(value) }}"></span>{% endif %}{{ value or 'Semua ruangan' }}</a>{% endfor %}</div>
     <p class="result-count">{{ pagination.total }} booking{% if search %} cocok dengan "<strong>{{ search }}</strong>" · <a href="{{ url_for('index', scope='all', view='list', room=selected_room) }}">Hapus pencarian</a>{% endif %}</p>
 </div>
 {% endif %}
 
 {% if view == 'schedule' %}
-<section class="board" style="--cols: {{ 1 if selected_room else 2 }}">
+<section class="board" style="--cols: {{ 1 if selected_room else rooms|length }}">
     {% for col in board if not selected_room or selected_room == col.room %}
     <div class="room-col {{ room_tone(col.room) }}">
         <header class="room-head {{ 'busy' if col.busy else '' }}">
@@ -87,7 +86,7 @@
     <div class="dialog-head"><h2 id="detail-title"></h2><button type="button" class="btn btn-icon" data-close-dialog aria-label="Tutup detail">{{ icon('close', 18) }}</button></div>
     <dl class="detail-list">
         <div><dt>Tanggal</dt><dd id="detail-date"></dd></div>
-        <div><dt>Jam</dt><dd><span id="detail-time" class="mono"></span> WIB</dd></div>
+        <div><dt>Jam</dt><dd><span id="detail-time" class="mono"></span> {{ timezone_label }}</dd></div>
         <div><dt>Pemesan / MD</dt><dd id="detail-md"></dd></div>
         <div><dt>Supplier / tamu</dt><dd id="detail-supplier"></dd></div>
         <div><dt>Status</dt><dd id="detail-status"></dd></div>

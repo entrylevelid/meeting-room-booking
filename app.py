@@ -20,6 +20,7 @@ DAYS = ('Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu')
 MONTHS = ('Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember')
 TIMEZONE = ZoneInfo('Asia/Jakarta')
+TIMEZONE_LABEL = 'WIB'
 DAY_START, DAY_END = time(7), time(18)
 
 
@@ -82,9 +83,14 @@ def protected_post(view):
     return wrapped
 
 
+def room_tone(room):
+    return f'room-{ROOMS.index(room) + 1}' if room in ROOMS else ''
+
+
 @app.context_processor
 def shared_context():
-    return dict(rooms=ROOMS, now=local_now(), csrf_token=csrf_token)
+    return dict(rooms=ROOMS, now=local_now(), csrf_token=csrf_token, room_tone=room_tone,
+                timezone=TIMEZONE.key, timezone_label=TIMEZONE_LABEL)
 
 
 def booking_status(booking, now):
@@ -100,6 +106,7 @@ def booking_json(booking, now):
                 day=day_name(booking.date), start=booking.start_time.strftime('%H:%M'),
                 end=booking.end_time.strftime('%H:%M'), md=booking.md_name,
                 supplier=booking.supplier_name, status=booking_status(booking, now),
+                tone=room_tone(booking.room),
                 edit_url=url_for('edit_booking', id=booking.id),
                 delete_url=url_for('delete_booking', id=booking.id))
 
@@ -244,7 +251,7 @@ def add_booking():
             return redirect(url_for('index', date=data['date'].isoformat()))
     else:
         selected = parse_date(request.args.get('date'), local_now().date())
-        values = dict(room=request.args.get('room', 'Room 1'), date=selected.isoformat(),
+        values = dict(room=request.args.get('room', ROOMS[0]), date=selected.isoformat(),
                       start_time=request.args.get('start_time', ''),
                       end_time=request.args.get('end_time', ''), md_name='', supplier_name='')
     return render_template('booking_form.html', values=values, errors=errors, booking=None), 422 if errors else 200

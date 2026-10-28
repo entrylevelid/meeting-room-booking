@@ -202,8 +202,7 @@ button:disabled, button:disabled:hover { opacity: .6; transform: none; box-shado
 
 .dialog { width: 460px; max-width: calc(100vw - 32px); padding: 0; background: var(--surface); color: var(--ink); border: var(--border); border-radius: var(--radius); box-shadow: 6px 6px 0 var(--shadow); }
 .dialog::backdrop { background: rgb(17 17 17 / .55); }
-.dialog-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 14px 20px; background: var(--room-1-fill); color: var(--on-fill); border-bottom: var(--border); }
-.dialog[data-room="2"] .dialog-head { background: var(--room-2-fill); }
+.dialog-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 14px 20px; background: var(--tone-fill, var(--room-1-fill)); color: var(--on-fill); border-bottom: var(--border); }
 .dialog-head h2 { font-size: 22px; }
 .dialog-head .btn { margin-left: auto; background: var(--surface); color: var(--ink); }
 .detail-list { margin: 0; padding: 6px 20px; }
