@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Database and runtime data (holds real booking records)
+instance/
+*.db
+*.sqlite3
+backups/
+
+# Local configuration
+.env
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

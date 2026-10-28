@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, status_pill %}
+{% macro room_tone(room) %}{{ 'room-1' if room == 'Room 1' else 'room-2' }}{% endmacro %}
+{% block title %}{{ 'Semua booking' if scope == 'all' else 'Jadwal' }}{% endblock %}
+{% block content %}
+{% set is_today = selected_date == now.date() %}
+<div data-auto-refresh data-selected-date="{{ selected_date }}" data-today="{{ now.date() }}">
+{% if scope == 'day' %}
+<section class="daybar">
+    <a class="btn btn-icon btn-lg" href="{{ previous_url }}" aria-label="Hari sebelumnya">{{ icon('left', 22) }}</a>
+    <div class="daybar-date">
+        <span class="daybar-day">{{ selected_date|day_name }}{% if is_today %} <span class="tag tag-accent">Hari ini</span>{% endif %}</span>
+        <h1>{{ selected_date|date_format }}</h1>
+    </div>
+    <a class="btn btn-icon btn-lg" href="{{ next_url }}" aria-label="Hari berikutnya">{{ icon('right', 22) }}</a>
+    <div class="daybar-tools">
+        {% if not is_today %}<a class="btn" href="{{ url_for('index', room=selected_room, view=view) }}">Hari ini</a>{% endif %}
+        <form method="get" class="date-form"><input type="hidden" name="view" value="{{ view }}"><input type="hidden" name="room" value="{{ selected_room }}"><label class="btn btn-icon date-picker" title="Pilih tanggal">{{ icon('calendar', 20) }}<input type="date" name="date" aria-label="Pilih tanggal" value="{{ selected_date }}" data-auto-submit required></label><noscript><button class="btn">Lihat</button></noscript></form>
+        <a class="btn btn-primary" href="{{ url_for('add_booking', date=selected_date.isoformat()) }}">{{ icon('plus', 20) }} Booking</a>
+    </div>
+</section>
+<div class="toolbar">
+    <div class="seg" aria-label="Filter ruangan">{% for value, label in [('', 'Semua ruangan'), ('Room 1', 'Room 1'), ('Room 2', 'Room 2')] %}<a class="{{ 'selected' if selected_room == value else '' }}" href="{{ url_for('index', date=selected_date.isoformat(), room=value, view=view) }}">{% if value %}<span class="swatch {{ room_tone(value) }}"></span>{% endif %}{{ label }}</a>{% endfor %}</div>
+    <div class="seg" aria-label="Tampilan">{% for value, label, name in [('schedule', 'Papan', 'grid'), ('list', 'Tabel', 'list')] %}<a class="{{ 'selected' if view == value else '' }}" href="{{ url_for('index', date=selected_date.isoformat(), room=selected_room, view=value) }}">{{ icon(name, 16) }}{{ label }}</a>{% endfor %}</div>
+</div>
+{% else %}
+<section class="pagehead">
+    <h1>Semua booking</h1>
+    <a class="btn btn-primary" href="{{ url_for('add_booking') }}">{{ icon('plus', 20) }} Booking</a>
+</section>
+<div class="toolbar">
+    <div class="seg" aria-label="Filter ruangan">{% for value, label in [('', 'Semua ruangan'), ('Room 1', 'Room 1'), ('Room 2', 'Room 2')] %}<a class="{{ 'selected' if selected_room == value else '' }}" href="{{ url_for('index', scope='all', view='list', room=value, q=search) }}">{% if value %}<span class="swatch {{ room_tone(value) }}"></span>{% endif %}{{ label }}</a>{% endfor %}</div>
+    <p class="result-count">{{ pagination.total }} booking{% if search %} cocok dengan "<strong>{{ search }}</strong>" · <a href="{{ url_for('index', scope='all', view='list', room=selected_room) }}">Hapus pencarian</a>{% endif %}</p>
+</div>
+{% endif %}
+
+{% if view == 'schedule' %}
+<section class="board" style="--cols: {{ 1 if selected_room else 2 }}">
+    {% for col in board if not selected_room or selected_room == col.room %}
+    <div class="room-col {{ room_tone(col.room) }}">
+        <header class="room-head {{ 'busy' if col.busy else '' }}">
+            <span class="room-name">Meeting {{ col.room }}</span>
+            <strong class="room-state">{{ col.state }}</strong>
+            {% if col.note %}<span class="room-note">{{ col.note }}</span>{% endif %}
+        </header>
+        {% if col['items'] %}
+        <ol class="slots">
+            {% for item in col['items'] %}
+            {% if item.kind == 'booking' %}{% set b = item.booking %}{% set status = booking_status(b, now) %}
+            <li><a class="slot-booking {{ 'is-now' if status == 'Berlangsung' else '' }} {{ 'is-done' if status == 'Selesai' else '' }}" href="{{ url_for('edit_booking', id=b.id) }}" data-booking-id="{{ b.id }}">
+                <span class="slot-top"><span class="slot-time">{{ b.start_time|time_format }}–{{ b.end_time|time_format }}</span>{{ status_pill(status) }}</span>
+                <strong>{{ b.md_name }}</strong>
+                <span class="slot-supplier">{{ b.supplier_name }}</span>
+            </a></li>
+            {% else %}
+            <li><a class="slot-free" href="{{ url_for('add_booking', date=selected_date.isoformat(), room=col.room, start_time=item.start|time_format, end_time=item.book_end|time_format) }}" aria-label="Booking {{ col.room }} mulai {{ item.start|time_format }}">
+                <span>Kosong {{ item.start|time_format }}–{{ item.end|time_format }}</span><span class="slot-free-cta">{{ icon('plus', 16) }} Booking</span>
+            </a></li>
+            {% endif %}
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="room-empty">Tidak ada booking di tanggal ini.</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</section>
+{% else %}
+<section class="panel">
+    {% if bookings %}
+    <table class="table">
+        <thead><tr><th>{{ 'Tanggal & jam' if scope == 'all' else 'Jam' }}</th><th>Ruangan</th><th>Pemesan / MD</th><th>Supplier / tamu</th><th>Status</th><th><span class="sr-only">Detail</span></th></tr></thead>
+        <tbody>{% for b in bookings %}<tr><td class="nowrap">{% if scope == 'all' %}<span class="cell-sub">{{ b.date|day_name }}, {{ b.date|date_format }}</span>{% endif %}<strong class="mono">{{ b.start_time|time_format }}–{{ b.end_time|time_format }}</strong></td><td class="nowrap"><span class="swatch {{ room_tone(b.room) }}"></span>{{ b.room }}</td><td class="strong">{{ b.md_name }}</td><td>{{ b.supplier_name }}</td><td>{{ status_pill(booking_status(b, now)) }}</td><td class="cell-action"><a class="btn btn-icon" href="{{ url_for('edit_booking', id=b.id) }}" data-booking-id="{{ b.id }}" aria-label="Detail booking {{ b.md_name }}">{{ icon('right', 18) }}</a></td></tr>{% endfor %}</tbody>
+    </table>
+    <div class="cards">{% for b in bookings %}<a href="{{ url_for('edit_booking', id=b.id) }}" data-booking-id="{{ b.id }}" class="slot-booking card {{ room_tone(b.room) }}"><span class="slot-top"><span class="slot-time">{{ b.start_time|time_format }}–{{ b.end_time|time_format }}</span>{{ status_pill(booking_status(b, now)) }}</span><strong>{{ b.md_name }}</strong><span class="slot-supplier">{{ b.supplier_name }}</span><span class="card-meta"><span class="swatch {{ room_tone(b.room) }}"></span>{{ b.room }}{% if scope == 'all' %} · {{ b.date|date_format }}{% endif %}</span></a>{% endfor %}</div>
+    {% else %}
+    <div class="empty">{% if search %}<strong>Tidak ada yang cocok</strong><p>Coba sebagian nama saja, misalnya "Mitra" untuk PT Mitra Sejahtera.</p>{% else %}<strong>Belum ada booking</strong>{% endif %}</div>
+    {% endif %}
+    {% if pagination and pagination.pages > 1 %}<div class="pagination"><span>Halaman {{ pagination.page }} dari {{ pagination.pages }}</span><div>{% if pagination.has_prev %}<a class="btn" href="{{ url_for('index', scope=scope, view=view, room=selected_room, q=search, page=pagination.prev_num) }}">Sebelumnya</a>{% endif %}{% if pagination.has_next %}<a class="btn" href="{{ url_for('index', scope=scope, view=view, room=selected_room, q=search, page=pagination.next_num) }}">Berikutnya</a>{% endif %}</div></div>{% endif %}
+</section>
+{% endif %}
+</div>
+{% endblock %}
+{% block dialogs %}
+<script type="application/json" id="booking-data">{{ booking_data|tojson }}</script>
+<dialog id="booking-detail" class="dialog" aria-labelledby="detail-title">
+    <div class="dialog-head"><h2 id="detail-title"></h2><button type="button" class="btn btn-icon" data-close-dialog aria-label="Tutup detail">{{ icon('close', 18) }}</button></div>
+    <dl class="detail-list">
+        <div><dt>Tanggal</dt><dd id="detail-date"></dd></div>
+        <div><dt>Jam</dt><dd><span id="detail-time" class="mono"></span> WIB</dd></div>
+        <div><dt>Pemesan / MD</dt><dd id="detail-md"></dd></div>
+        <div><dt>Supplier / tamu</dt><dd id="detail-supplier"></dd></div>
+        <div><dt>Status</dt><dd id="detail-status"></dd></div>
+    </dl>
+    <div class="dialog-actions"><form method="post" id="detail-delete-form" data-confirm="Batalkan booking ini?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-danger" type="submit">{{ icon('trash', 17) }} Batalkan</button></form><a id="detail-edit" class="btn btn-primary">{{ icon('edit', 17) }} Edit booking</a></div>
+</dialog>
+{% endblock %}

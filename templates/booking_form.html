@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon %}
+{% block title %}{{ 'Edit booking' if booking else 'Booking baru' }}{% endblock %}
+{% block content %}
+<section class="pagehead">
+    <div><a class="back-link" href="{{ url_for('index', date=values.date) }}">{{ icon('left', 16) }} Kembali ke jadwal</a><h1>{{ 'Edit booking' if booking else 'Booking baru' }}</h1></div>
+</section>
+<form method="post" id="booking-form" class="booking-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if errors %}<div class="form-errors" role="alert"><strong>Booking belum tersimpan</strong><ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
+    <fieldset class="room-picker">
+        <legend>Ruangan</legend>
+        {% for room in rooms %}<label class="room-option {{ 'room-1' if room == 'Room 1' else 'room-2' }}"><input type="radio" name="room" value="{{ room }}" required {{ 'checked' if values.room == room else '' }}><span class="room-option-body"><span class="room-option-mark">{{ icon('door', 26) }}</span><strong>{{ room }}</strong><span class="room-option-check">{{ icon('check', 18) }} Dipilih</span></span></label>{% endfor %}
+    </fieldset>
+    <div class="form-fields">
+        <div class="field">
+            <label for="date">Tanggal</label>
+            <input type="date" id="date" name="date" value="{{ values.date }}" required>
+            <span class="field-hint" id="date-day"></span>
+        </div>
+        <div class="field-row">
+            <div class="field"><label for="start_time">Mulai <span>WIB</span></label><input type="time" id="start_time" name="start_time" value="{{ values.start_time }}" required></div>
+            <div class="field"><label for="end_time">Selesai <span>WIB</span></label><input type="time" id="end_time" name="end_time" value="{{ values.end_time }}" required></div>
+        </div>
+        <div class="duration-hint" id="duration-hint" aria-live="polite" hidden>{{ icon('clock', 16) }}<span></span></div>
+        <div class="field">
+            <label for="md_name">Nama pemesan / MD</label>
+            <input id="md_name" type="text" name="md_name" value="{{ values.md_name }}" placeholder="Contoh: Dimas" maxlength="100" autocomplete="off" required>
+        </div>
+        <div class="field">
+            <label for="supplier_name">Nama supplier / tamu</label>
+            <input id="supplier_name" type="text" name="supplier_name" value="{{ values.supplier_name }}" placeholder="Contoh: PT Mitra Sejahtera" maxlength="100" autocomplete="off" required>
+        </div>
+    </div>
+    <div class="form-actions">{% if booking %}<button class="btn btn-danger" type="submit" form="delete-booking-form">{{ icon('trash', 17) }} Batalkan booking</button>{% endif %}<a class="btn" href="{{ url_for('index', date=values.date) }}">Kembali</a><button class="btn btn-primary" type="submit">{{ icon('check', 19) }} {{ 'Simpan perubahan' if booking else 'Simpan booking' }}</button></div>
+</form>
+{% if booking %}<form action="{{ url_for('delete_booking', id=booking.id) }}" method="post" id="delete-booking-form" data-confirm="Batalkan booking {{ booking.md_name }} ({{ booking.room }}, {{ booking.start_time|time_format }})?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>{% endif %}
+{% endblock %}

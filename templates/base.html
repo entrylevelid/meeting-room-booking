@@ -1,0 +1,35 @@
+{% from 'macros.html' import icon %}
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fff8e7">
+    <title>{% block title %}Jadwal{% endblock %} · Ruang Meeting</title>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Langsung ke konten</a>
+<header class="topbar">
+    <a href="{{ url_for('index') }}" class="brand"><span class="brand-mark">{{ icon('door', 22) }}</span><span class="brand-text">Ruang Meeting</span></a>
+    <nav class="nav" aria-label="Menu utama">
+        <a href="{{ url_for('index') }}" class="nav-link {{ 'active' if scope|default('day') != 'all' else '' }}">{{ icon('calendar', 18) }}Jadwal</a>
+        <a href="{{ url_for('index', scope='all', view='list') }}" class="nav-link {{ 'active' if scope|default('day') == 'all' else '' }}">{{ icon('list', 18) }}Semua booking</a>
+    </nav>
+    <form class="search-form" action="{{ url_for('index') }}" method="get" role="search">{{ icon('search', 18) }}<input type="hidden" name="scope" value="all"><input type="hidden" name="view" value="list"><input type="search" name="q" value="{{ search|default('') }}" placeholder="Cari pemesan atau supplier" aria-label="Cari pemesan atau supplier"></form>
+    <div class="topbar-end">
+        <span class="today">{{ now|day_name }}, {{ now|date_format }}</span>
+        <button type="button" class="btn btn-icon" data-theme-toggle role="switch" aria-checked="false" aria-label="Tema gelap" title="Aktifkan tema gelap"><span class="theme-moon">{{ icon('moon', 18) }}</span><span class="theme-sun">{{ icon('sun', 18) }}</span></button>
+    </div>
+</header>
+<main id="main" class="page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}<div class="alert alert-{{ category }}" role="status">{{ icon('check', 20) }}<span>{{ message }}</span><button type="button" class="btn btn-icon btn-flat" data-dismiss aria-label="Tutup notifikasi">{{ icon('close', 16) }}</button></div>{% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</main>
+{% block dialogs %}{% endblock %}
+</body>
+</html>
