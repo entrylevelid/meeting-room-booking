@@ -1,6 +1,8 @@
 # Meeting Room Booking
 
-Aplikasi Flask untuk mencatat booking dua ruang meeting kantor. Semua jam memakai WIB (Asia/Jakarta).
+Aplikasi Flask untuk mencatat booking dua ruang meeting kantor. Jadwalnya tampil sebagai papan per ruangan yang menunjukkan apakah ruangan sedang dipakai, dan jam kosongnya bisa langsung diklik untuk booking. Booking yang bentrok di ruangan yang sama ditolak.
+
+Data disimpan di SQLite, dan semua jam memakai WIB (Asia/Jakarta).
 
 ## Menjalankan di server Linux
 
